@@ -1,2 +1,5 @@
 *.sql
 *.php
+*.xlsx
+db-connection.php
+.gitignore
