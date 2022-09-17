@@ -6,5 +6,16 @@ th,
 td {
   text-align: center;
   justify-content: center;
-  padding: 12px;
+  padding: 10px;
+}
+
+.btn {
+
+  border: none; /* Remove borders */
+  cursor: pointer; /* Mouse pointer on hover */
+  padding: 0px;
+}
+
+.datetime {
+  font-size: 12px;
 }
