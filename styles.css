@@ -2,6 +2,17 @@ tr {
   border-bottom: 1px solid #ddd;
 }
 
+tr:nth-child(2) {
+  background-color: dodgerblue;
+  animation: fadeout 2s forwards;
+}
+
+@keyframes fadeout {
+  to {
+    background-color: #ffffff;
+  }
+}
+
 th,
 td {
   text-align: center;
@@ -10,7 +21,6 @@ td {
 }
 
 .btn {
-
   border: none; /* Remove borders */
   cursor: pointer; /* Mouse pointer on hover */
   padding: 0px;
@@ -18,4 +28,8 @@ td {
 
 .datetime {
   font-size: 12px;
+}
+
+.form-control input-sm {
+  font-size: 10px;
 }

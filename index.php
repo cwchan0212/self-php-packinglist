@@ -1,5 +1,5 @@
 <?php
-    session_start();
+session_start();
 ?>
 
 <!DOCTYPE html>
@@ -13,6 +13,28 @@ function fetchAll($DB)
     $d = $DB->query($uri);
     //$DB->closeConnection();
     return $d;
+}
+
+function updateRecords($DB)
+{
+
+}
+
+function grepSubmitAction($post)
+{
+    $postKeys = array_keys($_POST);
+    $pos = -1;
+    $submitStr = "";
+    for ($i = 0; $i < count($postKeys); $i++) {
+        //echo $i . " " . $postKeys[$i] . " " . strpos($postKeys[$i], "submit") . "<br>";
+        $pos = (strpos($postKeys[$i], "submit") === false) ? -1 : strpos($postKeys[$i], "submit");
+        // echo $postKeys[$i] . " " . $i . " " . $pos . "<br>";
+        if ($pos != -1) {
+            $submitStr = $postKeys[$i];
+            break;
+        }
+    }
+    return $submitStr;
 }
 
 ?>
@@ -39,59 +61,115 @@ function fetchAll($DB)
 // Load current records
 $data = fetchAll($DB);
 
+if (isset($_POST["showGrid"])) {
+    $_SESSION["showGrid"] = $_POST["showGrid"];
+}
+
+if (isset($_POST["showNew"])) {
+    $_SESSION["showNew"] = $_POST["showNew"];
+}
+
+echo "Session->ShowGrid " . $_SESSION["showGrid"] . "; <BR>Session->ShowNew " . $_SESSION["showNew"] . "<br>";
 // echo implode(" ", $_POST);
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    $_SESSION["showGrid"] = $_POST["showGrid"];
+    // $_SESSION["showGrid"] = isset($_POST["showGrid"]) ? $_POST["showGrid"] : $_SESSION["showGrid"];
+    $_SESSION["showNew"] = isset($_POST["showNew"]) ? $_POST["showNew"] : $_SESSION["showNew"];
 
-
-    $box = str_replace("-", "", trim($_POST["box-new"]));
-    // $_POST["box"] = $box;
-
-    $description = trim($_POST["description-new"]);
-    $quantity = trim($_POST["quantity-new"]);
-    $value = trim($_POST["value-new"]);
-
-    $condition = str_replace("-", "", trim($_POST["condition-new"]));
-    // $_POST["condition"] = $condition;
-
-    $gender = str_replace("-", "", trim($_POST["gender-new"]));
-    // $_POST["gender"] = $gender;
-
-    $material = str_replace("-", "", trim($_POST["material-new"]));
-    // $_POST["material"] = $material;
-
-    $filename = trim($_POST["filename-new"]);
-
-    // echo $_POST;
+    //  echo "showNew: " . isset($_POST["showNew"]) . " , " . isset($_POST["action"]);
 
     foreach ($_POST as $name => $val) {
         echo htmlspecialchars($name . ': ' . $val) . "<br/>";
     }
 
-    $action = $_POST["action"];
-    $id = $_POST["id"];
-    $uri = "";
-    $date = date('d-m-y h:i:s');
-    echo $date;
+    $submitAction = grepSubmitAction($_POST);
 
-    // INSERT a new row
-    if ($action == "new") {
-        $id = "";
-        // echo $uri;
+    if ($submitAction != "") {
+        // echo "submitAction: " . $submitAction;
+        $submitArray = explode("-", $submitAction);
+        $action = "new"; // default value of $action
 
-        // if (!$box) {
-        //     echo "<script> document.getElementById('box-new').focus()  </script>";
-        // }
+        if ($submitArray[1] == "new") {
+            $action = "insert";
+        } else if ($submitArray[1] == "save") {
+            $action = "update";
+            $id = $submitArray[2];
+        } else if ($submitArray[1] == "remove") {
+            $action = "delete";
+            $id = $submitArray[2];
+        }
 
-        if (($box) && ($description) && ($quantity) && ($value) && ($condition) && ($gender) && (material)) {
-            $result = $DB->query("INSERT INTO packing (box, description, quantity, value, conditio, gender, material, filename) VALUES (?,?,?,?,?,?,?,?)",
-                array($box, $description, $quantity, $value, $condition, $gender, $material, $filename));
-            if ($result > 0) {
-                // echo "<script> alert('Insert " . $result .  " record(s) successfully!') </script>";
-                $data = fetchAll($DB);
+        if ($_SESSION["showNew"] == "show" && ($action == "insert")) {
+
+            // $action = $_POST["action"];
+            echo "action: " . $action;
+            $box = str_replace("-", "", trim($_POST["box-new"]));
+            // $_POST["box"] = $box;
+
+            $description = trim($_POST["description-new"]);
+            $quantity = trim($_POST["quantity-new"]);
+            $value = trim($_POST["value-new"]);
+            $condition = str_replace("-", "", trim($_POST["condition-new"]));
+            $gender = str_replace("-", "", trim($_POST["gender-new"]));
+            $material = str_replace("-", "", trim($_POST["material-new"]));
+            $filename = trim($_POST["filename-new"]);
+
+            // echo $_POST;
+
+            $id = $_POST["id"];
+            $uri = "";
+            $date = date('d-m-y h:i:s');
+            echo $date;
+            // echo "action:" . $action;
+            // INSERT a new row
+            // if ($action == "insert") {
+            $id = "";
+            // echo $uri;
+
+            // if (!$box) {
+            //     echo "<script> document.getElementById('box-new').focus()  </script>";
+            // }
+
+            if (($box) && ($description) && ($quantity) && ($value) && ($condition) && ($gender) && ($material)) {
+                $result = $DB->query("INSERT INTO packing (box, description, quantity, value, conditio, gender, material, filename) VALUES (?,?,?,?,?,?,?,?)",
+                    array($box, $description, $quantity, $value, $condition, $gender, $material, $filename));
+                if ($result > 0) {
+                    echo "<script> alert('Added " . $result . " record successfully!') </script>";
+                    $data = fetchAll($DB);
+                }
+                $DB->closeConnection();
             }
-            $DB->closeConnection();
+            // }
+
+        } else {
+            if ($_SESSION["showGrid"] == "show" && ($action == "update")) {
+                $box = trim($_POST["box-" . $id]);
+                $description = trim($_POST["description-" . $id]);
+                $quantity = trim($_POST["quantity-" . $id]);
+                $value = trim($_POST["value-" . $id]);
+                $condition = trim($_POST["condition-" . $id]);
+                $gender = trim($_POST["gender-" . $id]);
+                $material = trim($_POST["material-" . $id]);
+                $filename = trim($_POST["filename-" . $id]);
+
+                if (($box) && ($description) && ($quantity) && ($value) && ($condition) && ($gender) && ($material)) {
+                    $result = $DB->query("UPDATE packing SET box = ?, description = ?, quantity = ?, value = ?, conditio = ?, gender = ?, material = ?, filename = ?
+                        WHERE id = ?", array($box, $description, $quantity, $value, $condition, $gender, $material, $filename, $id));
+                    if ($result > 0) {
+                        echo "<script> alert('Modified " . $result . " record successfully! [" . $id . "]') </script>";
+                        $data = fetchAll($DB);
+                    }
+                    $DB->closeConnection();
+                }
+            } else if ($_SESSION["showGrid"] == "show" && ($action == "delete")) {
+                if ($id != "") {
+                    $result = $DB->query("DELETE FROM packing WHERE id = ?", array($id));
+                    if ($result > 0) {
+                        echo "<script> alert('Removed " . $result . " record successfully! [" . $id . "]') </script>";
+                    }
+                    $DB->closeConnection();
+                }
+            }
         }
     }
 }
@@ -101,22 +179,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <form name="pack-config" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
             <tr>
                 <td>
-            
-                    <button name="showGrid" value="<?= ($_SESSION["showGrid"] == "hide") ? "show" : "hide" ?>"><i class="<?= ($_SESSION["showGrid"] == "hide") ? "fa-regular fa-eye-slash" : "fa-regular fa-eye" ?>"></i></button>
-                    <!-- <button name="showGrid" value="show"><i class="fa-regular fa-eye"></i></button> -->
+                    <button class="btn" name="showGrid" value="<?=($_SESSION["showGrid"] == "hide") ? "show" : "hide"?>"
+                        formnovalidate>
+                        <i
+                            class="<?=($_SESSION["showGrid"] == "hide") ? "fa-regular fa-eye-slash" : "fa-regular fa-eye"?>"></i>
+                    </button>
                 </td>
                 <td>
-                    <button><i class="fas fa-th"></i></button>
-                    <button><i class="fas fa-border-none"></i></button>
+                    <button class="btn" name="showNew" value="<?=($_SESSION["showNew"] == "hide") ? "show" : "hide"?>"
+                        formnovalidate>
+                        <i
+                            class="<?=($_SESSION["showNew"] == "hide") ? "fas fa-th" : "fas fa-border-none"?>"></i>
+                    </button>
                 </td>
             </tr>
-        <form>
-
+            <form>
     </table>
 
     <table border="1" padding="1">
         <tr>
-            <!-- <th>ID</th> -->
+            <th>No.</th>
             <th>Box</th>
             <th>Description</th>
             <th>Quantity</th>
@@ -124,29 +206,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <th>Condition</th>
             <th>Gender</th>
             <th>Material</th>
-            <th>Filename</th>
+            <th colspan="2">Filename</th>
             <th>Created on</th>
             <th>Updated on</th>
             <th>Action</th>
         </tr>
-        <form name="pack-new" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+<?php
+if ($_SESSION["showNew"] == "show") {
+    ?>
+        <form name="pack-new" value="new" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
             <tr>
-
-                <!-- <td> -->
-                <input name="id" class="form-control input-sm" type="hidden" value="">
-                <input name="action" class="form-control input-sm" type="hidden" value="new" />
-                <!-- </td> -->
+                <td>
+                <i class="fa-solid fa-plus"></i>
+                    <input name="id" class="form-control input-sm" type="hidden" value="">
+                </td>
                 <td>
                     <select name="box-new" class="form-control imput-sm" required>
                         <option></option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
+<?for ($i = 0; $i < 15; $i++) {?>
+                        <option value="<?=$i + 1?>"><?=$i + 1?></option>
+<?}?>
                     </select>
                 </td>
-                <td><input name="description-new" class="form-control input-sm" type="text" maxlength="40" length="30"
+                <td><input name="description-new" class="form-control input-sm" type="text" maxlength="30" length="30"
                         value="" placeholder="Item with Brand, Model..." required /></td>
                 <td><input name="quantity-new" size="4" min="0" class="form-control input-sm" type="number" step="1"
                         required />
@@ -194,6 +276,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         value="" placeholder="filename..." /></td>
                 <td>-</td>
                 <td>-</td>
+                <td>-</td>
                 <td>
                     <!-- <a href="#" onclick="event.preventDefault();this.closest('form').submit()"> -->
                     <button name="submit-new" value="new" class="btn"><i class="fa-solid fa-pen-to-square">
@@ -205,23 +288,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </td>
             </tr>
         </form>
-        <?php
+<?php
+}
 // echo var_dump($result);
-for ($i = 0; $i < count($data); $i++) {
-    ?>
-
+if ($_SESSION["showGrid"] == "show") {
+    for ($i = 0; $i < count($data); $i++) {
+        ?>
         <form name="pack-old" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
             <tr>
+                <td>
+                    <?=$i+1?>
+                </td>
                 <input name="id-<?=$data[$i]["id"]?>" class="form-control input-sm" type="hidden" value="">
+                <!-- <input name="action" class="form-control input-sm" type="hidden" value="edit" /> -->
                 <!-- <td><?=$data[$i]["id"]?></td> -->
                 <td>
                     <select name="box-<?=$data[$i]["id"]?>" class="form-control imput-sm" required>
                         <option></option>
-                        <option value="1" <?if ($data[$i]["box"]==1) { echo "selected" ; } ?>>1</option>
-                        <option value="2" <?if ($data[$i]["box"]==2) { echo "selected" ; } ?>>2</option>
-                        <option value="3" <?if ($data[$i]["box"]==3) { echo "selected" ; } ?>>3</option>
-                        <option value="4" <?if ($data[$i]["box"]==4) { echo "selected" ; } ?>>4</option>
-                        <option value="5" <?if ($data[$i]["box"]==5) { echo "selected" ; } ?>>5</option>
+                        <option value="1" <?if ($data[$i]["box"] == 1) {echo "selected";}?>>1</option>
+                        <option value="2" <?if ($data[$i]["box"] == 2) {echo "selected";}?>>2</option>
+                        <option value="3" <?if ($data[$i]["box"] == 3) {echo "selected";}?>>3</option>
+                        <option value="4" <?if ($data[$i]["box"] == 4) {echo "selected";}?>>4</option>
+                        <option value="5" <?if ($data[$i]["box"] == 5) {echo "selected";}?>>5</option>
                     </select>
                 </td>
                 <td>
@@ -233,92 +321,103 @@ for ($i = 0; $i < count($data); $i++) {
                         class="form-control input-sm" type="number" step="1" required />
                 </td>
                 <td>
-                    <input name="value-<?=$data[$i]["id"]?>" size="6" min="0" value="<?=$data[$i]["quantity"]?>"
+                    <input name="value-<?=$data[$i]["id"]?>" size="6" min="0" value="<?=$data[$i]["value"]?>"
                         class="form-control input-sm" type="number" step="100" required />
                 </td>
                 <td>
                     <select name="condition-<?=$data[$i]["id"]?>" class="form-control input-sm" required>
                         <option></option>
-                        <option value="New" <?if ($data[$i]["conditio"]=="New" ) { echo "selected" ; } ?>>New</option>
-                        <option value="Used" <?if ($data[$i]["conditio"]=="Used" ) { echo "selected" ; } ?>>Used
+                        <option value="New" <?if ($data[$i]["conditio"] == "New") {echo "selected";}?>>New</option>
+                        <option value="Used" <?if ($data[$i]["conditio"] == "Used") {echo "selected";}?>>Used
                         </option>
                     </select>
                 </td>
                 <td>
                     <select name="gender-<?=$data[$i]["id"]?>" class="form-control input-sm" required>
                         <option></option>
-                        <option value="Children" <?if ($data[$i]["gender"]=="Children" ) { echo "selected" ; } ?>
+                        <option value="Children" <?if ($data[$i]["gender"] == "Children") {echo "selected";}?>
                             >Children
                         </option>
-                        <option value="Female" <?if ($data[$i]["gender"]=="Female" ) { echo "selected" ; } ?>>Female
+                        <option value="Female" <?if ($data[$i]["gender"] == "Female") {echo "selected";}?>>Female
                         </option>
-                        <option value="Male" <?if ($data[$i]["gender"]=="Male" ) { echo "selected" ; } ?>>Male</option>
-                        <option value="Other" <?if ($data[$i]["gender"]=="Other" ) { echo "selected" ; } ?>>Other
+                        <option value="Male" <?if ($data[$i]["gender"] == "Male") {echo "selected";}?>>Male</option>
+                        <option value="Other" <?if ($data[$i]["gender"] == "Other") {echo "selected";}?>>Other
                         </option>
                     </select>
                 </td>
                 <td>
                     <select name="material-<?=$data[$i]["id"]?>" class="form-control input-sm" required>
                         <option></option>
-                        <option value="Cotton" <?if ($data[$i]["material"]=="Cotton" ) { echo "selected" ; } ?>>Cotton
+                        <option value="Cotton" <?if ($data[$i]["material"] == "Cotton") {echo "selected";}?>>Cotton
                         </option>
-                        <option value="Crystal" <?if ($data[$i]["material"]=="Crystal" ) { echo "selected" ; } ?>
+                        <option value="Crystal" <?if ($data[$i]["material"] == "Crystal") {echo "selected";}?>
                             >Crystal
                         </option>
-                        <option value="Glass" <?if ($data[$i]["material"]=="Glass" ) { echo "selected" ; } ?>>Glass
+                        <option value="Glass" <?if ($data[$i]["material"] == "Glass") {echo "selected";}?>>Glass
                         </option>
-                        <option value="Leather" <?if ($data[$i]["material"]=="Leather" ) { echo "selected" ; } ?>
+                        <option value="Leather" <?if ($data[$i]["material"] == "Leather") {echo "selected";}?>
                             >Leather
                         </option>
-                        <option value="Linen" <?if ($data[$i]["material"]=="Linen" ) { echo "selected" ; } ?>>Linen
+                        <option value="Linen" <?if ($data[$i]["material"] == "Linen") {echo "selected";}?>>Linen
                         </option>
-                        <option value="Metal" <?if ($data[$i]["material"]=="Metal" ) { echo "selected" ; } ?>>Metal
+                        <option value="Metal" <?if ($data[$i]["material"] == "Metal") {echo "selected";}?>>Metal
                         </option>
-                        <option value="Nylon" <?if ($data[$i]["material"]=="Nylon" ) { echo "selected" ; } ?>>Nylon
+                        <option value="Nylon" <?if ($data[$i]["material"] == "Nylon") {echo "selected";}?>>Nylon
                         </option>
-                        <option value="Other" <?if ($data[$i]["material"]=="Other" ) { echo "selected" ; } ?>>Other
+                        <option value="Other" <?if ($data[$i]["material"] == "Other") {echo "selected";}?>>Other
                         </option>
-                        <option value="Paper" <?if ($data[$i]["material"]=="Paper" ) { echo "selected" ; } ?>>Paper
+                        <option value="Paper" <?if ($data[$i]["material"] == "Paper") {echo "selected";}?>>Paper
                         </option>
-                        <option value="Plastic" <?if ($data[$i]["material"]=="Plastic" ) { echo "selected" ; } ?>
+                        <option value="Plastic" <?if ($data[$i]["material"] == "Plastic") {echo "selected";}?>
                             >Plastic
                         </option>
-                        <option value="Porcelain" <?if ($data[$i]["material"]=="Porcelain" ) { echo "selected" ; } ?>
+                        <option value="Porcelain" <?if ($data[$i]["material"] == "Porcelain") {echo "selected";}?>
                             >Porcelain</option>
-                        <option value="Silk" <?if ($data[$i]["material"]=="Silk" ) { echo "selected" ; } ?>>Silk
+                        <option value="Silk" <?if ($data[$i]["material"] == "Silk") {echo "selected";}?>>Silk
                         </option>
-                        <option value="Vinyl" <?if ($data[$i]["material"]=="Vinyl" ) { echo "selected" ; } ?>>Vinyl
+                        <option value="Vinyl" <?if ($data[$i]["material"] == "Vinyl") {echo "selected";}?>>Vinyl
                         </option>
-                        <option value="Wood" <?if ($data[$i]["material"]=="Wood" ) { echo "selected" ; } ?>>Wood
+                        <option value="Wood" <?if ($data[$i]["material"] == "Wood") {echo "selected";}?>>Wood
                         </option>
-                        <option value="Wool" <?if ($data[$i]["material"]=="Wool" ) { echo "selected" ; } ?>>Wool
+                        <option value="Wool" <?if ($data[$i]["material"] == "Wool") {echo "selected";}?>>Wool
                         </option>
                     </select>
                 </td>
                 <td>
                     <input name="filename-<?=$data[$i]["id"]?>" class="form-control input-sm" type="text" maxlength="30"
                         length="30" value="<?=$data[$i]["filename"]?>" />
+                        <!-- <button class="btn"><i class="fa-regular fa-image"></i></button> -->
                 </td>
+                <td>
+<?
+        $pattern = "/\b(\.jpg|\.JPG|\.png|\.PNG|\.gif|\.GIF)\b/";
+        // http://phpwfun.atwebpages.com/packing/images/1.jpg
+        if (preg_match($pattern, $data[$i]["filename"])) {
+            ?>
+                <button class="btn" onClick="window.open('./images/<?=$data[$i]["box"]?>/<?=$data[$i]["filename"]?>')"><i class="fa-regular fa-image"></i></button>
+<?} else {?>
+                <i class="fa-regular fa-image-slash"></i>
+<?}?>
                 </td>
                 <td>
                     <font class="datetime"><?=$data[$i]["created"]?></font>
                 </td>
                 <td>
-                    <font class="datetime"><?=$data[$i]["updated"]?></font>
+                    <font class="datetime"><?=($data[$i]["updated"] == "0000-00-00 00:00:00") ? "-" : $data[$i]["updated"]?></font>
                 </td>
                 <td>
                     <!-- fa-regular fa-floppy-disk -->
                     <!-- <i class="fa-regular fa-file"></i> -->
-                    <button name="save-<?=$data[$i]["id"]?>" value="-<?=$data[$i]["id"]?>" class="btn"><i
+                    <button name="submit-save-<?=$data[$i]["id"]?>" value="<?=$data[$i]["id"]?>" class="btn"><i
                             class="fa-regular fa-floppy-disk"></i></button>
-                    <button name="delete-<?=$data[$i]["id"]?>" value="-<?=$data[$i]["id"]?>" val class="btn"><i
+                    <button name="submit-remove-<?=$data[$i]["id"]?>" value="<?=$data[$i]["id"]?>" class="btn"><i
                             class="fa-solid fa-trash"></i></button>
                 </td>
             </tr>
         </form>
-        <?php
+<?php
 }
-
+}
 ?>
     </table>
 
