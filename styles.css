@@ -1,8 +1,12 @@
+.packtable {
+  width: 100%;
+}
+
 tr {
   border-bottom: 1px solid #ddd;
 }
 
-tr:nth-child(2) {
+.newly {
   background-color: dodgerblue;
   animation: fadeout 2s forwards;
 }
@@ -33,3 +37,4 @@ td {
 .form-control input-sm {
   font-size: 10px;
 }
+
