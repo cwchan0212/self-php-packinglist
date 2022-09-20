@@ -107,26 +107,38 @@
 
     if (isset($_POST["showNew"])) {
         $_SESSION["showNew"] = $_POST["showNew"];
+        // echo "S: " . $_SESSION["showBox"] . "<br>";
     } else {
         $_SESSION["showNew"] = "show";
     }
 
     // echo "Session->ShowGrid " . $_SESSION["showGrid"] . "; <BR>Session->ShowNew " .  $_SESSION["showNew"] . "<br>";
 
+    // echo "SS: " . $_SESSION["showBox"] . "<BR>";
+
     if (isset($_POST["showBox"])) {
         if ($_SESSION["showGrid"] == "show") {
             $_SESSION["showBox"] = (int)trim($_POST["showBox"]);
         } else {
+            // echo "SSa: " . $_SESSION["showBox"] . "<BR>";
             $_SESSION["showBox"] = -1;
         }
     } else {
-        $_SESSION["showBox"] = -1;
+        // echo "SSb: " . $_SESSION["showBox"] . "<BR>";
+        if (isset($_SESSION["showBox"])) {
+            // do nothing
+        } else {
+            $_SESSION["showBox"] = -1;
+        }
     }
+
+    // echo "SS1: " . $_SESSION["showBox"] . "<BR>";
 
     if ($_SESSION["showGrid"] == "hide") {
         $_SESSION["showBox"] = -1;
     }
 
+    // echo "SS2: " . $_SESSION["showBox"] . "<BR>";
 
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
@@ -199,7 +211,7 @@
 
                     if ($box && $description && $quantity && $value && $condition && $gender &&  $material ) {
                         $result = updateOne($DB,array($box, $description, $quantity, $value, $condition, $gender, $material, $filename, $id));
-                        $_SESSION["updateId"] = $id;
+                        $_SESSION["lastId"] = $id;
                         $_SESSION["showBox"] = $box;
                         if ($result > 0) {
                             echo "<script> alert('Modified " . $result . " record successfully! [" . $id . "]') </script>";
@@ -223,18 +235,19 @@
     // echo "BOX: " . $_SESSION["showBox"] . "<br>";
 
     $_SESSION["lastId"] = isset($_SESSION["lastId"]) ? $_SESSION["lastId"] : -1;
-    $_SESSION["updateId"] = isset($_SESSION["updateId"]) ? $_SESSION["updateId"] : -1;
+    // $_SESSION["updateId"] = isset($_SESSION["updateId"]) ? $_SESSION["updateId"] : -1;
 
-    if ($_SESSION["lastId"] != -1) {
-        $_SESSION["updateId"] = $_SESSION["lastId"];
-    }
+    // if ($_SESSION["lastId"] != -1) {
+    //     $_SESSION["updateId"] = $_SESSION["lastId"];
+    // }
 
-    if ($_SESSION["updateId"] != -1) {
-        $_SESSION["lastId"] = $_SESSION["updateId"];
-    }
+    // if ($_SESSION["updateId"] != -1) {
+    //     $_SESSION["lastId"] = $_SESSION["updateId"];
+    // }
 
-    // echo $_SESSION["lastId"] . "<BR>";
-
+    // echo "lastId: " .  $_SESSION["lastId"] . "<BR>";
+    // echo "showBox: " .  $_SESSION["showBox"] . "<BR>";
+    // echo "updateId: " . $_SESSION["updateId"] . "<BR>";
 ?>
         
         <table class="packtable">
@@ -299,7 +312,7 @@
 ?>
                     </select>
                 </td>
-                <td><input name="description-new" class="form-control form-control-sm" type="text" maxlength="30" length="30"  value="" placeholder="Item with Brand, Model..." required /></td>
+                <td><input name="description-new" class="form-control form-control-sm" type="text" maxlength="100" length="40"  value="" placeholder="Item with Brand, Model..." required /></td>
                 <td><input name="quantity-new" size="4" min="0" class="form-control form-control-sm" type="number" step="1" required />
                 </td>
                 <td><input name="value-new" size="6" min="0" class="form-control form-control-sm" type="number" step="10" required />
@@ -385,7 +398,7 @@
                     </select>
                 </td>
                 <td>
-                    <input name="description-<?=$data[$i]["id"]?>" class="form-control form-control-sm" type="text" maxlength="40" length="40" value="<?=$data[$i]["description"]?>" required />
+                    <input name="description-<?=$data[$i]["id"]?>" class="form-control form-control-sm" type="text" maxlength="100" length="40" value="<?=$data[$i]["description"]?>" required />
                 </td>
                 <td>
                     <input name="quantity-<?=$data[$i]["id"]?>" size="4" min="0" value="<?=$data[$i]["quantity"]?>" class="form-control form-control-sm" type="number" step="1" required />
@@ -437,7 +450,7 @@
         $pattern = "/\b(\.jpg|\.JPG|\.png|\.PNG|\.gif|\.GIF)\b/";       // http://phpwfun.atwebpages.com/packing/images/1.jpg
             if (preg_match($pattern, $data[$i]["filename"])) {
 ?>
-                    <button class="btn" onClick="window.open('./images/<?=$data[$i]["box"]?>/<?=$data[$i]["filename"]?>')">
+                    <button class="btn" onClick="event.preventDefault();window.open('./images/<?=$data[$i]["box"]?>/<?=$data[$i]["filename"]?>');return false;">
                         <i class="fa-regular fa-image"></i></button>
 <?php       } else {?>
   <i class="fa-regular fa-image-slash"></i>
