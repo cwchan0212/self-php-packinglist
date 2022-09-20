@@ -17,17 +17,16 @@
     }
 
     function insertOne($DB, $array) {
-        $uri = "INSERT INTO packing (box, description, quantity, value, conditio, gender, material, filename) VALUES (?,?,?,?,?,?,?,?)";
+        $uri = "INSERT INTO packing (box, description, quantity, value, conditio, gender, material, filename, ip) VALUES (?,?,?,?,?,?,?,?,?)";
         $res = $DB->query($uri, $array);
-        $_SESSION["lastID"] = $DB->lastInsertId();
+        // $_SESSION["lastID"] = $DB->lastInsertId();
         // imageUpload();
         return $res;
     }
-
     
     function updateOne($DB, $array) {
         $uri = "UPDATE packing SET box = ?, description = ?, quantity = ?, value = ?, conditio = ?, gender = ?, material = ?, filename = ? WHERE id = ?";
-        $res = $DB->query($uri, $array);
+        $res = $DB->query($uri, $array);               
         return $res;
     }
 
@@ -35,8 +34,7 @@
         $uri = "DELETE FROM packing WHERE id = ?";
         $res = $DB->query($uri, $array);
         return $res;
-    }
-    
+    }    
 
     function grepSubmitAction($post) {
         $postKeys = array_keys($_POST);
@@ -52,6 +50,27 @@
         return $submitStr;
     }
 
+    function getIPAddr() {
+        $ip = "";
+        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+            $ip = $_SERVER['HTTP_CLIENT_IP'];
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        } else {
+            $ip = $_SERVER['REMOTE_ADDR'];
+        }
+        return $ip;
+    }
+
+    function imageUpload() {
+        $target_dir = "images/";
+        $target_file = $target_dir . basename($_FILES["filename-new"]["name"]);
+        if (move_uploaded_file($_FILES["filename-new"]["tmp_name"], $target_file)) {
+            echo "<script>alert('The file ". htmlspecialchars( basename( $_FILES["filename-new"]["name"])). " has been uploaded.')</script>";
+        } else {
+            echo "<script>alert(Sorry, there was an error uploading your file.')</script>";
+        }
+    }
 ?>
 
 <!DOCTYPE html>
@@ -71,6 +90,14 @@
     </head>
 
     <body>
+        <div class="logo">
+            <img src="https://www.sevenseasworldwide.com/media/4203/25thlogo400x124.png" width="300" />
+        </div>
+        <div class="banner">
+            <img src="https://www.sevenseasworldwide.com/media/3523/hongkong800.png?anchor=center&mode=crop&width=60&height=60&rnd=132690178250000000" width="40">
+            　<i class="fa-solid fa-angle-left fa-2xl"></i><i class="fa-solid fa-question fa-2xl"></i><i class="fa-solid fa-equals fa-2xl"></i>　<i class="fa-solid fa-arrow-left fa-2xl"></i>　<i class="fa-solid fa-minus fa-2xl"></i>　<h3 class="display-4"> Packing List </h3>　<i class="fa-solid fa-minus fa-2xl"></i>　<i class="fa-solid fa-arrow-right fa-2xl"></i>　<i class="fa-solid fa-question fa-2xl"></i><i class="fa-solid fa-angle-right fa-2xl"></i>　  
+            <img src="https://www.sevenseasworldwide.com/media/3536/uk800.png?anchor=center&mode=crop&width=60&height=60&rnd=132690180520000000" width="40">
+        </div>
 <?php
     if (isset($_POST["showGrid"])) {
         $_SESSION["showGrid"] = $_POST["showGrid"];        
@@ -84,7 +111,7 @@
         $_SESSION["showNew"] = "show";
     }
 
-    echo "Session->ShowGrid " . $_SESSION["showGrid"] . "; <BR>Session->ShowNew " .  $_SESSION["showNew"] . "<br>";
+    // echo "Session->ShowGrid " . $_SESSION["showGrid"] . "; <BR>Session->ShowNew " .  $_SESSION["showNew"] . "<br>";
 
     if (isset($_POST["showBox"])) {
         if ($_SESSION["showGrid"] == "show") {
@@ -104,9 +131,15 @@
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         $submitAction = grepSubmitAction($_POST);
+        
+        if (isset($_FILES["filename-new"])) {
+            // imageUpload($_FILES["filename-new"]);    // not implemented
+        }  
+
+        // echo "files: " . var_dump($_FILES);
 
         if ($submitAction != "") {
-            echo "submitAction: " . $submitAction . "<BR>";
+            // echo "submitAction: " . $submitAction . "<BR>";
             $submitArray = explode("-", $submitAction);
             $action = "new"; // default value of $action
 
@@ -120,16 +153,13 @@
                 $id = $submitArray[2];
             }
 
-            foreach ($_POST as $name => $val) {
-                echo htmlspecialchars($name . ": " . $val) . "<br/>";
-            }
+            // foreach ($_POST as $name => $val) {
+            //     echo htmlspecialchars($name . ": " . $val) . "<br/>";
+            // }
 
             if ($_SESSION["showNew"] == "show" && $action == "insert") {
-            // if ($_SESSION["showNew"] == "show" && $action == "insert") {
-                // $action = $_POST["action"];
-                echo "action: " . $action;
-                $box = str_replace("-", "", trim($_POST["box-new"]));
-                // $_POST["box"] = $box;
+                // echo "action: " . $action;
+                $box = trim($_POST["box-new"]);
 
                 $description = trim($_POST["description-new"]);
                 $quantity = trim($_POST["quantity-new"]);
@@ -137,30 +167,21 @@
                 $condition = trim($_POST["condition-new"]);
                 $gender = trim($_POST["gender-new"]);
                 $material =  trim($_POST["material-new"]);
-                $filename = $_POST["filename-new"];
-                
-                echo "Filename: " . $_FILES['filename-new']['name']."<br>";
-                echo "Type : " . $_FILES['filename-new']['type'] ."<br>";
-                echo "Size : " . $_FILES['filename-new']['size'] ."<br>";
-                echo "Temp name: " . $_FILES['filename-new']['tmp_name'] ."<br>";
-                echo "Error : " . $_FILES['filename-new']['error'] . "<br>";
-
-                if (isset($_FILES["filename-new"])) {        
-                    $imageFile = $_FILES["filename-new"];
-                    
-                    
-                    
-                }
+                // $filename = $_POST["filename-new"];
+                $filename = $_FILES["filename-new"]["name"];
+                $ip = getIPAddr();
 
                 $uri = "";
+                date_default_timezone_set("Asia/Hong_Kong");
                 $date = date("d-m-y h:i:s");
-                echo $date;
+                // echo $date;
                 $id = "";
 
                 if ($box && $description && $quantity && $value && $condition && $gender &&  $material ) {
-                    $result = insertOne($DB, array($box, $description, $quantity, $value, $condition, $gender, $material, $filename));
+                    $result = insertOne($DB, array($box, $description, $quantity, $value, $condition, $gender, $material, $filename, $ip));
                     if ($result > 0) {
                         $_SESSION["lastId"] = $DB->lastInsertId();
+                        $_SESSION["showBox"] = $box;
                         echo "<script> alert('Added " . $result . " record successfully!') </script>";
                     }                    
                 }
@@ -178,10 +199,12 @@
 
                     if ($box && $description && $quantity && $value && $condition && $gender &&  $material ) {
                         $result = updateOne($DB,array($box, $description, $quantity, $value, $condition, $gender, $material, $filename, $id));
+                        $_SESSION["updateId"] = $id;
+                        $_SESSION["showBox"] = $box;
                         if ($result > 0) {
                             echo "<script> alert('Modified " . $result . " record successfully! [" . $id . "]') </script>";
-                        }
-                        
+                            // $data = fetchOne($DB, (int)$_SESSION["showBox"]);
+                        }                        
                     }
                 } elseif (
                     $_SESSION["showGrid"] == "show" &&  $action == "delete" ) {
@@ -195,18 +218,27 @@
             }
         }
     }
-
-    echo $_SESSION["showGrid"] . "<br>";
-    echo $_SESSION["showBox"] . "<br>";
-
+    
+    // echo $_SESSION["showGrid"] . "<br>";
+    // echo "BOX: " . $_SESSION["showBox"] . "<br>";
 
     $_SESSION["lastId"] = isset($_SESSION["lastId"]) ? $_SESSION["lastId"] : -1;
-    echo $_SESSION["lastId"] . "<BR>";
-    // echo lastInsertOne($DB);
+    $_SESSION["updateId"] = isset($_SESSION["updateId"]) ? $_SESSION["updateId"] : -1;
+
+    if ($_SESSION["lastId"] != -1) {
+        $_SESSION["updateId"] = $_SESSION["lastId"];
+    }
+
+    if ($_SESSION["updateId"] != -1) {
+        $_SESSION["lastId"] = $_SESSION["updateId"];
+    }
+
+    // echo $_SESSION["lastId"] . "<BR>";
+
 ?>
         
         <table class="packtable">
-            <form name="pack-config" method="post" action="<?=$_SERVER["PHP_SELF"]?>"> 
+            <form name="pack-config" method="post" action="<?=$_SERVER["PHP_SELF"]?>" enctype="multipart/form-data"> 
                 <tr>
                     <td>
                         <button class="btn btn<?=$outline = (($_SESSION["showGrid"] =="show") &&  ($_SESSION["showBox"] == -1)) ? "" : "-outline" ?>-secondary" name="showGrid" value="<?=$_SESSION["showGrid"] == "hide" ? "show" : "hide"?>" formnovalidate>
@@ -215,14 +247,14 @@
 <?php
     for ($i=0; $i<15; $i++) {                      
 ?>
-                        <button name="showBox" type="submit" class="btn btn<?=$outline = ($_SESSION["showBox"] === $i+1) ? "" : "-outline" ?>-secondary" value="<?=$i+1?>" formnovalidate>　<?=$i+1?>　</button>
+                        <button name="showBox" type="submit" class="btn btn<?=$outline = ((int)$_SESSION["showBox"] === $i+1) ? "" : "-outline" ?>-secondary" value="<?=$i+1?>" formnovalidate>　<?=$i+1?>　</button>
 <?php
     }
 ?>
                     </td>
                     <td>
-                        <button class="btn" name="showNew" value="<?=$_SESSION["showNew"] == "hide" ? "show" : "hide"?>" formnovalidate>
-                            <i class="<?=$_SESSION["showNew"] == "hide" ? "fas fa-th" : "fas fa-border-none"?>"></i>
+                        <button class="btn btn<?=$outline = (($_SESSION["showNew"] =="show") &&  ($_SESSION["showNew"] == -1)) ? "" : "-outline" ?>-secondary" name="showNew" value="<?=$_SESSION["showNew"] == "hide" ? "show" : "hide"?>" formnovalidate>
+                            　<i class="<?=$_SESSION["showNew"] == "hide" ? "fas fa-th" : "fas fa-border-none"?>">　</i>
                         </button>
                     </td>
                 </tr>
@@ -239,7 +271,7 @@
                 <th>Condition</th>
                 <th>Gender</th>
                 <th>Material</th>
-                <th colspan="2">Filename</th>
+                <th colspan="2">Filename <small>*(not implemented)</small></th>
                 <th>Created on</th>
                 <th>Updated on</th>
                 <th>Action</th>
@@ -253,10 +285,10 @@
             <tr>
                 <td>
                     <i class="fa-solid fa-plus"></i>
-                    <input name="id" class="form-control input-sm" type="hidden" value="">
+                    <input name="id" class="form-control form-control-sm" type="hidden" value="">
                 </td>
                 <td>
-                    <select name="box-new" class="form-control imput-sm" required>
+                    <select name="box-new" class="form-control form-control-sm" required>
                         <option></option>
 <?php  
     for ($i = 0; $i < 15; $i++) {
@@ -267,20 +299,20 @@
 ?>
                     </select>
                 </td>
-                <td><input name="description-new" class="form-control input-sm" type="text" maxlength="30" length="30"  value="" placeholder="Item with Brand, Model..." required /></td>
-                <td><input name="quantity-new" size="4" min="0" class="form-control input-sm" type="number" step="1" required />
+                <td><input name="description-new" class="form-control form-control-sm" type="text" maxlength="30" length="30"  value="" placeholder="Item with Brand, Model..." required /></td>
+                <td><input name="quantity-new" size="4" min="0" class="form-control form-control-sm" type="number" step="1" required />
                 </td>
-                <td><input name="value-new" size="6" min="0" class="form-control input-sm" type="number" step="10" required />
+                <td><input name="value-new" size="6" min="0" class="form-control form-control-sm" type="number" step="10" required />
                 </td>
                 <td>
-                    <select name="condition-new" class="form-control input-sm" required>
+                    <select name="condition-new" class="form-control form-control-sm" required>
                         <option></option>
                         <option value="New">New</option>
                         <option value="Used">Used</option>
                     </select>
                 </td>
                 <td>
-                    <select name="gender-new" class="form-control input-sm" required>
+                    <select name="gender-new" class="form-control form-control-sm" required>
                         <option></option>
                         <option value="Children">Children</option>
                         <option value="Female">Female</option>
@@ -289,7 +321,7 @@
                     </select>
                 </td>
                 <td>
-                    <select name="material-new" class="form-control input-sm" required>
+                    <select name="material-new" class="form-control form-control-sm" required>
                         <option></option>
                         <option value="Cotton">Cotton</option>
                         <option value="Crystal">Crystal</option>
@@ -316,8 +348,8 @@
                 <td>-</td>
                 <td>-</td>
                 <td>
-                    <button name="submit-new" value="new" class="btn" type="submit">
-                        <i class="fa-solid fa-pen-to-square"></i>
+                    <button type="submit" class="btn btn-outline-secondary" name="submit-new" value="new" class="btn" type="submit">
+                        　<i class="fa-solid fa-pen-to-square">　</i>
                     </button>
                 </td>
             </tr>
@@ -325,27 +357,26 @@
 <?php
     }
 ?>
-            <form name="pack-old" method="post" action="<?=$_SERVER["PHP_SELF"]?>"> 
+            <form name="pack-old" method="post" action="<?=$_SERVER["PHP_SELF"]?>" enctype="multipart/form-data"> 
 <?php
     
     if ($_SESSION["showGrid"] == "show") {
-        echo "box: " . $_SESSION["showBox"] . "<br>";
-
+        // echo "box: " . $_SESSION["showBox"] . "<br>";
         if ($_SESSION["showBox"] !== -1) {
             $data = fetchOne($DB, (int)$_SESSION["showBox"]);
         } else {
             $data = fetchAll($DB);
         }
         
-        echo count($data) . "<br>";
+        // echo count($data) . "<br>";
         // $lastId = lastInsertOne($DB);
-        echo "lastid"  . $_SESSION["lastId"] . " ";
+        // echo "lastid"  . $_SESSION["lastId"] . " ";
         for ($i = 0; $i < count($data); $i++) {
 ?>
             <tr<?= $last = ((int)($_SESSION["lastId"]) === (int)$data[$i]["id"]) ? " class=\"newly\"" : ""  ?>>
                 <td><?=$i + 1?></td>
                 <td>
-                    <select name="box-<?=$data[$i]["id"]?>" class="form-control imput-sm" required>
+                    <select name="box-<?=$data[$i]["id"]?>" class="form-control form-control-sm" required>
                         <option></option>
                         <?php for ($j = 0; $j < 15; $j++) {?>
                         <option value="<?=$j + 1?>" <?=$selected = ($data[$i]["box"] == $j + 1) ? "selected" : "" ?>>
@@ -354,23 +385,23 @@
                     </select>
                 </td>
                 <td>
-                    <input name="description-<?=$data[$i]["id"]?>" class="form-control input-sm" type="text" maxlength="40" length="40" value="<?=$data[$i]["description"]?>" required />
+                    <input name="description-<?=$data[$i]["id"]?>" class="form-control form-control-sm" type="text" maxlength="40" length="40" value="<?=$data[$i]["description"]?>" required />
                 </td>
                 <td>
-                    <input name="quantity-<?=$data[$i]["id"]?>" size="4" min="0" value="<?=$data[$i]["quantity"]?>" class="form-control input-sm" type="number" step="1" required />
+                    <input name="quantity-<?=$data[$i]["id"]?>" size="4" min="0" value="<?=$data[$i]["quantity"]?>" class="form-control form-control-sm" type="number" step="1" required />
                 </td>
                 <td>
-                    <input name="value-<?=$data[$i]["id"]?>" size="6" min="0" value="<?=$data[$i]["value"]?>"class="form-control input-sm" type="number" step="10" required />
+                    <input name="value-<?=$data[$i]["id"]?>" size="6" min="0" value="<?=$data[$i]["value"]?>"class="form-control form-control-sm" type="number" step="10" required />
                 </td>
                 <td>
-                    <select name="condition-<?=$data[$i]["id"]?>" class="form-control input-sm" required>
+                    <select name="condition-<?=$data[$i]["id"]?>" class="form-control form-control-sm" required>
                         <option></option>
                         <option value="New" <?=$selected = ($data[$i]["conditio"] == "New") ? "selected" : "" ?>>New</option>
                         <option value="Used" <?=$selected = ($data[$i]["conditio"] == "Used") ? "selected" : "" ?>>Used</option>
                     </select>
                 </td>
                 <td>
-                    <select name="gender-<?=$data[$i]["id"]?>" class="form-control input-sm" required>
+                    <select name="gender-<?=$data[$i]["id"]?>" class="form-control form-control-sm" required>
                         <option></option>
                         <option value="Children" <?=$selected = ($data[$i]["gender"] == "Children") ? "selected" : "" ?>>Children</option>
                         <option value="Female" <?=$selected = ($data[$i]["gender"] == "Female") ? "selected" : "" ?>>Female</option>
@@ -379,7 +410,7 @@
                     </select>
                 </td>
                 <td>
-                    <select name="material-<?=$data[$i]["id"]?>" class="form-control input-sm" required>
+                    <select name="material-<?=$data[$i]["id"]?>" class="form-control form-control-sm" required>
                         <option></option>
                         <option value="Cotton" <?=$selected = ($data[$i]["material"] == "Cotton") ? "selected" : "" ?>>Cotton</option>
                         <option value="Crystal" <?=$selected = ($data[$i]["material"] == "Crystal") ? "selected" : "" ?>>Crystal </option>
@@ -399,7 +430,7 @@
                     </select>
                 </td>
                 <td>
-                    <input name="filename-<?=$data[$i]["id"]?>" class="form-control input-sm" type="text" maxlength="30" length="30" value="<?=$data[$i]["filename"]?>" />
+                    <input name="filename-<?=$data[$i]["id"]?>" class="form-control form-control-sm" type="text" maxlength="30" length="30" value="<?=$data[$i]["filename"]?>" />
                 </td>
                 <td>
 <?php
@@ -422,8 +453,8 @@
                 <td>
                     <!-- fa-regular fa-floppy-disk -->
                     <!-- <i class="fa-regular fa-file"></i> -->
-                    <button name="submit-save-<?=$data[$i]["id"]?>" value="<?=$data[$i]["id"]?>" class="btn" type="submit"><i class="fa-regular fa-floppy-disk"></i></button>
-                    <button name="submit-remove-<?=$data[$i]["id"]?>" value="<?=$data[$i]["id"]?>" class="btn"><i class="fa-solid fa-trash"></i></button>
+                    <button type="submit" class="btn btn-outline-secondary" name="submit-save-<?=$data[$i]["id"]?>" value="<?=$data[$i]["id"]?>" class="btn" type="submit">　<i class="fa-regular fa-floppy-disk">　</i></button>
+                    <button type="submit" class="btn btn-outline-secondary" name="submit-remove-<?=$data[$i]["id"]?>" value="<?=$data[$i]["id"]?>" class="btn">　<i class="fa-solid fa-trash"></i>　</button>
                 </td>
 
             </tr>
@@ -438,5 +469,7 @@
 
 </html>
 <?php
+    // session_unset();
+    // session_destroy();  
     $DB->closeConnection();
 ?>

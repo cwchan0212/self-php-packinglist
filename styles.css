@@ -1,3 +1,20 @@
+.logo {
+  display: flex;
+  justify-content: center;
+}
+
+
+.banner {
+  display:flex;
+  flex-direction:row;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  
+
+}
+
 .packtable {
   width: 100%;
 }
@@ -16,6 +33,7 @@ tr {
     background-color: #ffffff;
   }
 }
+
 
 th,
 td {
