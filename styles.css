@@ -3,16 +3,13 @@
   justify-content: center;
 }
 
-
 .banner {
-  display:flex;
-  flex-direction:row;
+  display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
   text-align: center;
   position: relative;
-  
-
 }
 
 .packtable {
@@ -33,7 +30,6 @@ tr {
     background-color: #ffffff;
   }
 }
-
 
 th,
 td {
@@ -56,3 +52,25 @@ td {
   font-size: 10px;
 }
 
+
+.tableFixHead {
+  overflow-y: auto;
+  height: 470px;
+}
+
+.tableFixHead thead th {
+  position: sticky;
+  top: 0;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  /* border: 1px solid #ccc; */
+}
+th {
+  background: #eee;
+}

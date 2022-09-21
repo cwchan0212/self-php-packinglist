@@ -3,14 +3,14 @@
     require "./db-connection.php";
 
     function fetchAll($DB) {
-        $uri = "SELECT id, box, description, quantity, value, conditio, gender, material, filename, created, updated FROM packing order by box, filename asc";
+        $uri = "SELECT id, box, description, quantity, value, conditio, gender, material, filename, created, updated FROM packing ORDER BY box, description, conditio, gender, material, filename asc";
         $d = $DB->query($uri);
         $DB->closeConnection();
         return $d;
     }
 
     function fetchOne($DB, $box) {
-        $uri = "SELECT id, box, description, quantity, value, conditio, gender, material, filename, created, updated FROM packing WHERE box = ? order by box, filename asc";
+        $uri = "SELECT id, box, description, quantity, value, conditio, gender, material, filename, created, updated FROM packing WHERE box = ? ORDER BY box, description, conditio, gender, material asc";
         $d = $DB->query($uri, array($box));
         $DB->closeConnection();
         return $d;
@@ -273,104 +273,107 @@
                 </tr>
                 <form>
         </table>
-
-        <table class="packtable">
-            <tr>
-                <th>No.</th>
-                <th>Box</th>
-                <th>Description</th>
-                <th>Quantity</th>
-                <th>Value</th>
-                <th>Condition</th>
-                <th>Gender</th>
-                <th>Material</th>
-                <th colspan="2">Filename <small>*(not implemented)</small></th>
-                <th>Created on</th>
-                <th>Updated on</th>
-                <th>Action</th>
-            </tr>
-
+        <div class="tableFixHead">
+            <table class="packtable">
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>Box</th>
+                        <th>Description</th>
+                        <th>Quantity</th>
+                        <th>Value</th>
+                        <th>Condition</th>
+                        <th>Gender</th>
+                        <th>Material</th>
+                        <th colspan="2">Filename <small>*(not implemented)</small></th>
+                        <th>Created on</th>
+                        <th>Updated on</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
 <?php
     if ($_SESSION["showNew"] == "show") {
 ?>
-            <form name="pack-new" method="post" action="<?=$_SERVER["PHP_SELF"]?>" enctype="multipart/form-data">  
-                    
-            <tr>
-                <td>
-                    <i class="fa-solid fa-plus"></i>
-                    <input name="id" class="form-control form-control-sm" type="hidden" value="">
-                </td>
-                <td>
-                    <select name="box-new" class="form-control form-control-sm" required>
-                        <option></option>
+                    <form name="pack-new" method="post" action="<?=$_SERVER["PHP_SELF"]?>" enctype="multipart/form-data">  
+      
+                        <tr>
+                            <td>
+                                <i class="fa-solid fa-plus"></i>
+                                <input name="id" class="form-control form-control-sm" type="hidden" value="">
+                            </td>
+                            <td>
+                                <select name="box-new" class="form-control form-control-sm" required>
+                                    <option></option>
 <?php  
     for ($i = 0; $i < 15; $i++) {
 ?>
-                        <option value="<?=$i + 1?>" <?=$selected = ((int)($_SESSION["showBox"]) === $i + 1) ? "selected" : "" ?>><?=$i + 1?></option>
+                                    <option value="<?=$i + 1?>" <?=$selected = ((int)($_SESSION["showBox"]) === $i + 1) ? "selected" : "" ?>><?=$i + 1?></option>
 <?php   
     }   
 ?>
-                    </select>
-                </td>
-                <td><input name="description-new" class="form-control form-control-sm" type="text" maxlength="100" length="40"  value="" placeholder="Item with Brand, Model..." required /></td>
-                <td><input name="quantity-new" size="4" min="0" class="form-control form-control-sm" type="number" step="1" required />
-                </td>
-                <td><input name="value-new" size="6" min="0" class="form-control form-control-sm" type="number" step="10" required />
-                </td>
-                <td>
-                    <select name="condition-new" class="form-control form-control-sm" required>
-                        <option></option>
-                        <option value="New">New</option>
-                        <option value="Used">Used</option>
-                    </select>
-                </td>
-                <td>
-                    <select name="gender-new" class="form-control form-control-sm" required>
-                        <option></option>
-                        <option value="Children">Children</option>
-                        <option value="Female">Female</option>
-                        <option value="Male">Male</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </td>
-                <td>
-                    <select name="material-new" class="form-control form-control-sm" required>
-                        <option></option>
-                        <option value="Cotton">Cotton</option>
-                        <option value="Crystal">Crystal</option>
-                        <option value="Glass">Glass</option>
-                        <option value="Leather">Leather</option>
-                        <option value="Linen">Linen</option>
-                        <option value="Metal">Metal</option>
-                        <option value="Nylon">Nylon</option>
-                        <option value="Other">Other</option>
-                        <option value="Paper">Paper</option>
-                        <option value="Plastic">Plastic</option>
-                        <option value="Porcelain">Porcelain</option>
-                        <option value="Silk">Silk</option>
-                        <option value="Vinyl">Vinyl</option>
-                        <option value="Wood">Wood</option>
-                        <option value="Wool">Wool</option>
-                    </select>
-                </td>
-                <td>
-                    <input name="filename-new" class="form-control form-control-sm" id="formFileSm" type="file">
+                                </select>
+                            </td>
+                                <td><input name="description-new" class="form-control form-control-sm" type="text" maxlength="100" length="40"  value="" placeholder="Item with Brand, Model..." required /></td>
+                                <td><input name="quantity-new" size="4" min="0" class="form-control form-control-sm" type="number" step="1" required />
+                            </td>
+                            <td>
+                                <input name="value-new" size="6" min="0" class="form-control form-control-sm" type="number" step="10" required />
+                            </td>
+                            <td>
+                                <select name="condition-new" class="form-control form-control-sm" required>
+                                    <option></option>
+                                    <option value="New">New</option>
+                                    <option value="Used">Used</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="gender-new" class="form-control form-control-sm" required>
+                                    <option></option>
+                                    <option value="Children">Children</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="material-new" class="form-control form-control-sm" required>
+                                    <option></option>
+                                    <option value="Cotton">Cotton</option>
+                                    <option value="Crystal">Crystal</option>
+                                    <option value="Glass">Glass</option>
+                                    <option value="Leather">Leather</option>
+                                    <option value="Linen">Linen</option>
+                                    <option value="Metal">Metal</option>
+                                    <option value="Nylon">Nylon</option>
+                                    <option value="Other">Other</option>
+                                    <option value="Paper">Paper</option>
+                                    <option value="Plastic">Plastic</option>
+                                    <option value="Porcelain">Porcelain</option>
+                                    <option value="Silk">Silk</option>
+                                    <option value="Vinyl">Vinyl</option>
+                                    <option value="Wood">Wood</option>
+                                    <option value="Wool">Wool</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input name="filename-new" class="form-control form-control-sm" id="formFileSm" type="file">
                     
-                </td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>
-                    <button type="submit" class="btn btn-outline-secondary" name="submit-new" value="new" class="btn" type="submit">
-                        　<i class="fa-solid fa-pen-to-square">　</i>
-                    </button>
-                </td>
-            </tr>
-            </form>
+                            </td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            <td>
+                                <button type="submit" class="btn btn-outline-secondary" name="submit-new" value="new" class="btn" type="submit">
+                                    　<i class="fa-solid fa-pen-to-square">　</i>
+                                </button>
+                            </td>
+                        </tr>
+                    </form>
 <?php
     }
 ?>
-            <form name="pack-old" method="post" action="<?=$_SERVER["PHP_SELF"]?>" enctype="multipart/form-data"> 
+                    <form name="pack-old" method="post" action="<?=$_SERVER["PHP_SELF"]?>" enctype="multipart/form-data"> 
 <?php
     
     if ($_SESSION["showGrid"] == "show") {
@@ -386,103 +389,101 @@
         // echo "lastid"  . $_SESSION["lastId"] . " ";
         for ($i = 0; $i < count($data); $i++) {
 ?>
-            <tr<?= $last = ((int)($_SESSION["lastId"]) === (int)$data[$i]["id"]) ? " class=\"newly\"" : ""  ?>>
-                <td><?=$i + 1?></td>
-                <td>
-                    <select name="box-<?=$data[$i]["id"]?>" class="form-control form-control-sm" required>
-                        <option></option>
-                        <?php for ($j = 0; $j < 15; $j++) {?>
-                        <option value="<?=$j + 1?>" <?=$selected = ($data[$i]["box"] == $j + 1) ? "selected" : "" ?>>
-                            <?=$j + 1?></option>
-                        <?php }?>
-                    </select>
-                </td>
-                <td>
-                    <input name="description-<?=$data[$i]["id"]?>" class="form-control form-control-sm" type="text" maxlength="100" length="40" value="<?=$data[$i]["description"]?>" required />
-                </td>
-                <td>
-                    <input name="quantity-<?=$data[$i]["id"]?>" size="4" min="0" value="<?=$data[$i]["quantity"]?>" class="form-control form-control-sm" type="number" step="1" required />
-                </td>
-                <td>
-                    <input name="value-<?=$data[$i]["id"]?>" size="6" min="0" value="<?=$data[$i]["value"]?>"class="form-control form-control-sm" type="number" step="10" required />
-                </td>
-                <td>
-                    <select name="condition-<?=$data[$i]["id"]?>" class="form-control form-control-sm" required>
-                        <option></option>
-                        <option value="New" <?=$selected = ($data[$i]["conditio"] == "New") ? "selected" : "" ?>>New</option>
-                        <option value="Used" <?=$selected = ($data[$i]["conditio"] == "Used") ? "selected" : "" ?>>Used</option>
-                    </select>
-                </td>
-                <td>
-                    <select name="gender-<?=$data[$i]["id"]?>" class="form-control form-control-sm" required>
-                        <option></option>
-                        <option value="Children" <?=$selected = ($data[$i]["gender"] == "Children") ? "selected" : "" ?>>Children</option>
-                        <option value="Female" <?=$selected = ($data[$i]["gender"] == "Female") ? "selected" : "" ?>>Female</option>
-                        <option value="Male" <?=$selected = ($data[$i]["gender"] == "Male") ? "selected" : "" ?>>Male</option>
-                        <option value="Other" <?=$selected = ($data[$i]["gender"] == "Other") ? "selected" : "" ?>>Other</option>
-                    </select>
-                </td>
-                <td>
-                    <select name="material-<?=$data[$i]["id"]?>" class="form-control form-control-sm" required>
-                        <option></option>
-                        <option value="Cotton" <?=$selected = ($data[$i]["material"] == "Cotton") ? "selected" : "" ?>>Cotton</option>
-                        <option value="Crystal" <?=$selected = ($data[$i]["material"] == "Crystal") ? "selected" : "" ?>>Crystal </option>
-                        <option value="Glass" <?=$selected = ($data[$i]["material"] == "Glass") ? "selected" : "" ?>> Glass</option>
-                        <option value="Leather" <?=$selected = ($data[$i]["material"] == "Leather") ? "selected" : "" ?>>Leather</option>
-                        <option value="Linen" <?=$selected = ($data[$i]["material"] == "Linen") ? "selected" : "" ?>>Linen</option>
-                        <option value="Metal" <?=$selected = ($data[$i]["material"] == "Metal") ? "selected" : "" ?>>Metal</option>
-                        <option value="Nylon" <?=$selected = ($data[$i]["material"] == "Nylon") ? "selected" : "" ?>>Nylon</option>
-                        <option value="Other" <?=$selected = ($data[$i]["material"] == "Other") ? "selected" : "" ?>>Other</option>
-                        <option value="Paper" <?=$selected = ($data[$i]["material"] == "Paper") ? "selected" : "" ?>>Paper</option>
-                        <option value="Plastic" <?=$selected = ($data[$i]["material"] == "Plastic") ? "selected" : "" ?>>Plastic</option>
-                        <option value="Porcelain" <?=$selected = ($data[$i]["material"] == "Porcelain") ? "selected" : "" ?>>Porcelain</option>
-                        <option value="Silk" <?=$selected = ($data[$i]["material"] == "Silk") ? "selected" : "" ?>>Silk</option>
-                        <option value="Vinyl" <?=$selected = ($data[$i]["material"] == "Vinyl") ? "selected" : "" ?>>Vinyl</option>
-                        <option value="Wood" <?=$selected = ($data[$i]["material"] == "Wood") ? "selected" : "" ?>>Wood</option>
-                        <option value="Wool" <?=$selected = ($data[$i]["material"] == "Wool") ? "selected" : "" ?>>Wool</option>
-                    </select>
-                </td>
-                <td>
-                    <input name="filename-<?=$data[$i]["id"]?>" class="form-control form-control-sm" type="text" maxlength="30" length="30" value="<?=$data[$i]["filename"]?>" />
-                </td>
-                <td>
+                        <tr<?= $last = ((int)($_SESSION["lastId"]) === (int)$data[$i]["id"]) ? " class=\"newly\"" : ""  ?>>
+                            <td><?=$i + 1?></td>
+                            <td>
+                                <select name="box-<?=$data[$i]["id"]?>" class="form-control form-control-sm" required>
+                                    <option></option>
+                                    <?php for ($j = 0; $j < 15; $j++) {?>
+                                    <option value="<?=$j + 1?>" <?=$selected = ($data[$i]["box"] == $j + 1) ? "selected" : "" ?>>
+                                        <?=$j + 1?></option>
+                                    <?php }?>
+                                </select>
+                            </td>
+                            <td>
+                                <input name="description-<?=$data[$i]["id"]?>" class="form-control form-control-sm" type="text" maxlength="100" length="40" value="<?=$data[$i]["description"]?>" required />
+                            </td>
+                            <td>
+                                <input name="quantity-<?=$data[$i]["id"]?>" size="4" min="0" value="<?=$data[$i]["quantity"]?>" class="form-control form-control-sm" type="number" step="1" required />
+                            </td>
+                            <td>
+                                <input name="value-<?=$data[$i]["id"]?>" size="6" min="0" value="<?=$data[$i]["value"]?>"class="form-control form-control-sm" type="number" step="10" required />
+                            </td>
+                            <td>
+                                <select name="condition-<?=$data[$i]["id"]?>" class="form-control form-control-sm" required>
+                                    <option></option>
+                                    <option value="New" <?=$selected = ($data[$i]["conditio"] == "New") ? "selected" : "" ?>>New</option>
+                                    <option value="Used" <?=$selected = ($data[$i]["conditio"] == "Used") ? "selected" : "" ?>>Used</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="gender-<?=$data[$i]["id"]?>" class="form-control form-control-sm" required>
+                                    <option></option>
+                                    <option value="Children" <?=$selected = ($data[$i]["gender"] == "Children") ? "selected" : "" ?>>Children</option>
+                                    <option value="Female" <?=$selected = ($data[$i]["gender"] == "Female") ? "selected" : "" ?>>Female</option>
+                                    <option value="Male" <?=$selected = ($data[$i]["gender"] == "Male") ? "selected" : "" ?>>Male</option>
+                                    <option value="Other" <?=$selected = ($data[$i]["gender"] == "Other") ? "selected" : "" ?>>Other</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="material-<?=$data[$i]["id"]?>" class="form-control form-control-sm" required>
+                                    <option></option>
+                                    <option value="Cotton" <?=$selected = ($data[$i]["material"] == "Cotton") ? "selected" : "" ?>>Cotton</option>
+                                    <option value="Crystal" <?=$selected = ($data[$i]["material"] == "Crystal") ? "selected" : "" ?>>Crystal </option>
+                                    <option value="Glass" <?=$selected = ($data[$i]["material"] == "Glass") ? "selected" : "" ?>> Glass</option>
+                                    <option value="Leather" <?=$selected = ($data[$i]["material"] == "Leather") ? "selected" : "" ?>>Leather</option>
+                                    <option value="Linen" <?=$selected = ($data[$i]["material"] == "Linen") ? "selected" : "" ?>>Linen</option>
+                                    <option value="Metal" <?=$selected = ($data[$i]["material"] == "Metal") ? "selected" : "" ?>>Metal</option>
+                                    <option value="Nylon" <?=$selected = ($data[$i]["material"] == "Nylon") ? "selected" : "" ?>>Nylon</option>
+                                    <option value="Other" <?=$selected = ($data[$i]["material"] == "Other") ? "selected" : "" ?>>Other</option>
+                                    <option value="Paper" <?=$selected = ($data[$i]["material"] == "Paper") ? "selected" : "" ?>>Paper</option>
+                                    <option value="Plastic" <?=$selected = ($data[$i]["material"] == "Plastic") ? "selected" : "" ?>>Plastic</option>
+                                    <option value="Porcelain" <?=$selected = ($data[$i]["material"] == "Porcelain") ? "selected" : "" ?>>Porcelain</option>
+                                    <option value="Silk" <?=$selected = ($data[$i]["material"] == "Silk") ? "selected" : "" ?>>Silk</option>
+                                    <option value="Vinyl" <?=$selected = ($data[$i]["material"] == "Vinyl") ? "selected" : "" ?>>Vinyl</option>
+                                    <option value="Wood" <?=$selected = ($data[$i]["material"] == "Wood") ? "selected" : "" ?>>Wood</option>
+                                    <option value="Wool" <?=$selected = ($data[$i]["material"] == "Wool") ? "selected" : "" ?>>Wool</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input name="filename-<?=$data[$i]["id"]?>" class="form-control form-control-sm" type="text" maxlength="30" length="30" value="<?=$data[$i]["filename"]?>" />
+                            </td>
+                            <td>
 <?php
         $pattern = "/\b(\.jpg|\.JPG|\.png|\.PNG|\.gif|\.GIF)\b/";       // http://phpwfun.atwebpages.com/packing/images/1.jpg
             if (preg_match($pattern, $data[$i]["filename"])) {
 ?>
-                    <button class="btn" onClick="event.preventDefault();window.open('./images/<?=$data[$i]["box"]?>/<?=$data[$i]["filename"]?>');return false;">
-                        <i class="fa-regular fa-image"></i></button>
+                                <button class="btn" onClick="event.preventDefault();window.open('./images/<?=$data[$i]["box"]?>/<?=$data[$i]["filename"]?>');return false;">
+                                    <i class="fa-regular fa-image"></i></button>
 <?php       } else {?>
-  <i class="fa-regular fa-image-slash"></i>
+                                    <i class="fa-regular fa-image-slash"></i>
 <?php       } ?>
-                </td>
-                <td>
-                    <font class="datetime"><?=$data[$i]["created"]?></font>
-                </td>
-                <td>
-                    <font class="datetime">
-                        <?=$data[$i]["updated"] == "0000-00-00 00:00:00" ? "-" : $data[$i]["updated"]?></font>
-                </td>
-                <td>
-                    <!-- fa-regular fa-floppy-disk -->
-                    <!-- <i class="fa-regular fa-file"></i> -->
-                    <button type="submit" class="btn btn-outline-secondary" name="submit-save-<?=$data[$i]["id"]?>" value="<?=$data[$i]["id"]?>" class="btn" type="submit">　<i class="fa-regular fa-floppy-disk">　</i></button>
-                    <button type="submit" class="btn btn-outline-secondary" name="submit-remove-<?=$data[$i]["id"]?>" value="<?=$data[$i]["id"]?>" class="btn">　<i class="fa-solid fa-trash"></i>　</button>
-                </td>
-
-            </tr>
+                            </td>
+                            <td>
+                                <font class="datetime"><?=$data[$i]["created"]?></font>
+                            </td>
+                            <td>
+                                <font class="datetime"><?=$data[$i]["updated"] == "0000-00-00 00:00:00" ? "-" : $data[$i]["updated"]?></font>
+                            </td>
+                            <td>
+                                <button type="submit" class="btn btn-outline-secondary" name="submit-save-<?=$data[$i]["id"]?>" value="<?=$data[$i]["id"]?>" class="btn" type="submit">　<i class="fa-regular fa-floppy-disk">　</i></button>
+                                <button type="submit" class="btn btn-outline-secondary" name="submit-remove-<?=$data[$i]["id"]?>" value="<?=$data[$i]["id"]?>" class="btn">　<i class="fa-solid fa-trash"></i>　</button>
+                            </td>
+                        </tr>
 <?php          
             
         }
     }
-?>          </form>
-        </table>
-
+?>              
+                    </tbody>
+                </form>
+            </table>
+        </div>
     </body>
 
 </html>
 <?php
-    // session_unset();
-    // session_destroy();  
+    session_unset();
+    session_destroy();  
     $DB->closeConnection();
 ?>
