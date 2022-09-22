@@ -16,7 +16,9 @@
         $DB->closeConnection();
         return $d;
     }
-
+    // https://stackoverflow.com/questions/16470527/warning-input-variables-exceeded-1000
+    // Warning: Input variables exceeded 1000
+    // $totalResults = json_decode($_POST['totalResults']);
 ?>
 
 <!DOCTYPE html>
@@ -112,18 +114,22 @@
         } else {
             $data = fetchAll($DB);
         }
-        
-        for ($i = 0; $i < count($data); $i++) {
+
+        $jsondata = json_encode($data);
+        $array = json_decode( $jsondata, true);
+        $i = 1;
+        foreach ($array as $key => $jsons) { 
 ?>
+
                     <tr>
-                        <td><?=$i + 1?></td>
-                        <td><?=$data[$i]["box"]?></td>
-                        <td><?=$data[$i]["description"]?></td>
-                        <td><?=$data[$i]["quantity"]?></td>
-                        <td><?=$data[$i]["value"]?></td>
-                        <td><?=$data[$i]["conditio"]?></td>
-                        <td><?=$data[$i]["gender"]?></td>
-                        <td><?=$data[$i]["material"]?></td>
+                        <td><?=$i++?></td>
+                        <td><?=$jsons["box"] ?></td>
+                        <td><?=$jsons["description"] ?></td>
+                        <td><?=$jsons["quantity"] ?></td>
+                        <td><?=$jsons["value"] ?></td>
+                        <td><?=$jsons["conditio"] ?></td>
+                        <td><?=$jsons["gender"] ?></td>
+                        <td><?=$jsons["material"] ?></td>
                     </tr>
 <?php
         }
@@ -135,7 +141,7 @@
     </body>
 </html>
 <?php
-    session_unset();
-    session_destroy();
+    // session_unset();
+    // session_destroy();
     $DB->closeConnection();
 ?>

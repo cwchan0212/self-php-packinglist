@@ -71,6 +71,9 @@
             echo "<script>alert(Sorry, there was an error uploading your file.')</script>";
         }
     }
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -266,12 +269,12 @@
 ?>
                     </td>
                     <td>
-                        <button class="btn btn<?=$outline = (($_SESSION["showNew"] =="show") &&  ($_SESSION["showNew"] == -1)) ? "" : "-outline" ?>-secondary" name="showNew" value="<?=$_SESSION["showNew"] == "hide" ? "show" : "hide"?>" formnovalidate>
+                        <button type="submit" class="btn btn<?=$outline = (($_SESSION["showNew"] =="show") &&  ($_SESSION["showNew"] == -1)) ? "" : "-outline" ?>-secondary" name="showNew" value="<?=$_SESSION["showNew"] == "hide" ? "show" : "hide"?>" formnovalidate>
                             　<i class="<?=$_SESSION["showNew"] == "hide" ? "fas fa-th" : "fas fa-border-none"?>">　</i>
                         </button>
                     </td>
                 </tr>
-                <form>
+            </form>
         </table>
         <div class="tableFixHead">
             <table class="packtable">
@@ -306,15 +309,15 @@
                                 <select name="box-new" class="form-control form-control-sm" required>
                                     <option></option>
 <?php  
-    for ($i = 0; $i < 15; $i++) {
+        for ($i = 0; $i < 15; $i++) {
 ?>
                                     <option value="<?=$i + 1?>" <?=$selected = ((int)($_SESSION["showBox"]) === $i + 1) ? "selected" : "" ?>><?=$i + 1?></option>
 <?php   
-    }   
+        }   
 ?>
                                 </select>
                             </td>
-                                <td><input name="description-new" class="form-control form-control-sm" type="text" maxlength="100" length="40"  value="" placeholder="Item with Brand, Model..." required /></td>
+                                <td><input name="description-new" class="form-control form-control-sm" title="No quotes are allowed" pattern="[^'\x22]+" type="text" maxlength="100" length="40"  value="" placeholder="Item with Brand, Model..." required /></td>
                                 <td><input name="quantity-new" size="4" min="0" class="form-control form-control-sm" type="number" step="1" required />
                             </td>
                             <td>
@@ -364,7 +367,7 @@
                                 <td>-</td>
                                 <td>-</td>
                             <td>
-                                <button type="submit" class="btn btn-outline-secondary" name="submit-new" value="new" class="btn" type="submit">
+                                <button type="submit" class="btn btn-outline-secondary" name="submit-new" value="new" class="btn">
                                     　<i class="fa-solid fa-pen-to-square">　</i>
                                 </button>
                             </td>
@@ -394,14 +397,13 @@
                             <td>
                                 <select name="box-<?=$data[$i]["id"]?>" class="form-control form-control-sm" required>
                                     <option></option>
-                                    <?php for ($j = 0; $j < 15; $j++) {?>
-                                    <option value="<?=$j + 1?>" <?=$selected = ($data[$i]["box"] == $j + 1) ? "selected" : "" ?>>
-                                        <?=$j + 1?></option>
-                                    <?php }?>
+<?php       for ($j = 0; $j < 15; $j++) {?>
+                                    <option value="<?=$j + 1?>" <?=$selected = ($data[$i]["box"] == $j + 1) ? "selected" : "" ?>><?=$j + 1?></option>
+<?php       } ?>
                                 </select>
                             </td>
                             <td>
-                                <input name="description-<?=$data[$i]["id"]?>" class="form-control form-control-sm" type="text" maxlength="100" length="40" value="<?=$data[$i]["description"]?>" required />
+                                <input name="description-<?=$data[$i]["id"]?>" title="No quotes are allowed" pattern="[^'\x22]+" class="form-control form-control-sm" type="text" maxlength="100" length="40" value="<?=$data[$i]["description"]?>" required />
                             </td>
                             <td>
                                 <input name="quantity-<?=$data[$i]["id"]?>" size="4" min="0" value="<?=$data[$i]["quantity"]?>" class="form-control form-control-sm" type="number" step="1" required />
@@ -446,7 +448,7 @@
                                 </select>
                             </td>
                             <td>
-                                <input name="filename-<?=$data[$i]["id"]?>" class="form-control form-control-sm" type="text" maxlength="30" length="30" value="<?=$data[$i]["filename"]?>" />
+                                <input name="filename-<?=$data[$i]["id"]?>" title="No quotes are allowed" pattern="[^'\x22]+" class="form-control form-control-sm" type="text" maxlength="30" length="30" value="<?=$data[$i]["filename"]?>" />
                             </td>
                             <td>
 <?php
@@ -454,7 +456,8 @@
             if (preg_match($pattern, $data[$i]["filename"])) {
 ?>
                                 <button class="btn" onClick="event.preventDefault();window.open('./images/<?=$data[$i]["box"]?>/<?=$data[$i]["filename"]?>');return false;">
-                                    <i class="fa-regular fa-image"></i></button>
+                                    <i class="fa-regular fa-image"></i>
+                                </button>
 <?php       } else {?>
                                     <i class="fa-regular fa-image-slash"></i>
 <?php       } ?>
